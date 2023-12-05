@@ -2,9 +2,6 @@
 
 Add-Type -AssemblyName System.Windows.Forms
 
-# Cargar funciones desde Funciones.ps1
-. ".\Funciones.ps1"
-
 function Mostrar-Interfaz {
     $form = New-Object Windows.Forms.Form
     $form.Text = "Mantenimiento de PC"
