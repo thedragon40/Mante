@@ -7,6 +7,17 @@ function Mostrar-Interfaz {
     $form.Text = "Mantenimiento de PC"
     $form.StartPosition = "CenterScreen"
     $form.Size = New-Object Drawing.Size(400, 300)
+    $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog  # Impide que la ventana se pueda maximizar o redimensionar
+
+    # Cambiar el color de fondo y el color de la fuente
+    $form.BackColor = [System.Drawing.Color]::LightYellow
+    $form.ForeColor = [System.Drawing.Color]::DarkSlateGray
+
+    # Cambiar el icono de la ventana
+    $iconPath = "C:\Ruta\A\Tu\Icono.ico"  # Ruta al archivo de icono personalizado
+    if (Test-Path $iconPath) {
+        $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($iconPath)
+    }
 
     $outputTextBox = New-Object Windows.Forms.TextBox
     $outputTextBox.Multiline = $true
@@ -37,6 +48,7 @@ function Mostrar-Interfaz {
         $checkBox.Text = $option
         $checkBox.Location = New-Object Drawing.Point(10, $topMargin)
         $checkBox.AutoSize = $true
+        $checkBox.ForeColor = [System.Drawing.Color]::DarkSlateGray
         $form.Controls.Add($checkBox)
         $checkBoxes[$option] = $checkBox
         $topMargin += $checkBox.Height + 5
@@ -46,6 +58,7 @@ function Mostrar-Interfaz {
     $buttonEjecutar.Location = New-Object Drawing.Point(10, $topMargin)
     $buttonEjecutar.Size = New-Object Drawing.Size(150, 30)
     $buttonEjecutar.Text = "Ejecutar"
+    $buttonEjecutar.BackColor = [System.Drawing.Color]::PaleGreen
     $buttonEjecutar.Add_Click({
         $outputTextBox.Clear()
         $selectedOptions = $checkBoxes.Values | Where-Object { $_.Checked }
@@ -66,6 +79,7 @@ function Mostrar-Interfaz {
     $buttonSalir.Location = New-Object Drawing.Point(180, $topMargin)
     $buttonSalir.Size = New-Object Drawing.Size(150, 30)
     $buttonSalir.Text = "Salir"
+    $buttonSalir.BackColor = [System.Drawing.Color]::LightCoral
     $buttonSalir.Add_Click({
         $form.Close()
     })
