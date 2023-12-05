@@ -4,10 +4,10 @@
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 # Cargar funciones desde GitHub
-iex (iwr -useb https://raw.githubusercontent.com/thedragon40/Mantenimiento/main/Funciones.ps1).Content
+iex (iwr -useb https://raw.githubusercontent.com/thedragon40/Mante/main/Funciones.ps1).Content
 
 # Cargar interfaz desde GitHub
-iex (iwr -useb https://raw.githubusercontent.com/thedragon40/Mantenimiento/main/Interfaz1.ps1).Content
+iex (iwr -useb https://raw.githubusercontent.com/thedragon40/Mante/main/Interfaz1.ps1).Content
 
 # Ejecución del programa
 Mostrar-Interfaz
