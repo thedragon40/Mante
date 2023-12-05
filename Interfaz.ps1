@@ -68,10 +68,14 @@ function Mostrar-Interfaz {
             return
         }
 
-        foreach ($option in $selectedOptions) {
-            $outputTextBox.AppendText("Ejecutando: $($option.Text)`r`n")
-            Ejecutar-Funcion $option.Text
-        }
+        $selectedOptionsText = $selectedOptions | ForEach-Object { $_.Text }
+        $outputTextBox.AppendText("Ejecutando las siguientes funciones:`r`n$($selectedOptionsText -join "`r`n")`r`n")
+
+        # Convertir nombres de opciones en un array
+        $selectedOptionsArray = $selectedOptionsText -split "`r`n"
+
+        # Ejecutar las funciones correspondientes
+        Ejecutar-Opciones $selectedOptionsArray
     })
     $form.Controls.Add($buttonEjecutar)
 
@@ -87,16 +91,6 @@ function Mostrar-Interfaz {
 
     $form.Add_Shown({$form.Activate()})
     $form.ShowDialog()
-}
-
-function Ejecutar-Funcion($funcion) {
-    # Implementa la lógica de las funciones según tus necesidades
-    switch ($funcion) {
-        "Desfragmentar el disco" { Write-Host "Desfragmentando el disco" }
-        "Limpiar archivos temporales" { Write-Host "Limpiando archivos temporales" }
-        # Agrega más funciones según sea necesario
-        default { Write-Host "Opción no válida: $funcion" }
-    }
 }
 
 # Ejecución del programa
