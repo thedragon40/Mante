@@ -2,6 +2,9 @@
 
 Add-Type -AssemblyName System.Windows.Forms
 
+# Cargar funciones desde Funciones.ps1
+. ".\Funciones.ps1"
+
 function Mostrar-Interfaz {
     $form = New-Object Windows.Forms.Form
     $form.Text = "Mantenimiento de PC"
@@ -27,7 +30,7 @@ function Mostrar-Interfaz {
     $outputTextBox.ReadOnly = $true
     $form.Controls.Add($outputTextBox)
 
-    $checkBoxes = @{}
+    $toggleButtons = @{}
     $options = @(
         "Desfragmentar el disco",
         "Limpiar archivos temporales",
@@ -44,14 +47,14 @@ function Mostrar-Interfaz {
     $topMargin = 170
 
     foreach ($option in $options) {
-        $checkBox = New-Object Windows.Forms.CheckBox
-        $checkBox.Text = $option
-        $checkBox.Location = New-Object Drawing.Point(10, $topMargin)
-        $checkBox.AutoSize = $true
-        $checkBox.ForeColor = [System.Drawing.Color]::DarkSlateGray
-        $form.Controls.Add($checkBox)
-        $checkBoxes[$option] = $checkBox
-        $topMargin += $checkBox.Height + 5
+        $toggleButton = New-Object Windows.Forms.CheckBox
+        $toggleButton.Text = $option
+        $toggleButton.Location = New-Object Drawing.Point(10, $topMargin)
+        $toggleButton.AutoSize = $true
+        $toggleButton.ForeColor = [System.Drawing.Color]::DarkSlateGray
+        $form.Controls.Add($toggleButton)
+        $toggleButtons[$option] = $toggleButton
+        $topMargin += $toggleButton.Height + 5
     }
 
     $buttonEjecutar = New-Object Windows.Forms.Button
@@ -61,21 +64,18 @@ function Mostrar-Interfaz {
     $buttonEjecutar.BackColor = [System.Drawing.Color]::PaleGreen
     $buttonEjecutar.Add_Click({
         $outputTextBox.Clear()
-        $selectedOptions = $checkBoxes.Values | Where-Object { $_.Checked }
+        $selectedOptions = $toggleButtons.Values | Where-Object { $_.Checked }
 
         if ($selectedOptions.Count -eq 0) {
             $outputTextBox.AppendText("No se ha seleccionado ninguna función para ejecutar.")
             return
         }
 
-        $selectedOptionsText = $selectedOptions | ForEach-Object { $_.Text }
-        $outputTextBox.AppendText("Ejecutando las siguientes funciones:`r`n$($selectedOptionsText -join "`r`n")`r`n")
-
-        # Convertir nombres de opciones en un array
-        $selectedOptionsArray = $selectedOptionsText -split "`r`n"
-
-        # Ejecutar las funciones correspondientes
-        Ejecutar-Opciones $selectedOptionsArray
+        foreach ($option in $selectedOptions) {
+            $outputTextBox.AppendText("Ejecutando: $($option.Text)`r`n")
+            Ejecutar-Funcion $option.Text
+            $option.Checked = $false  # Desactivar el botón después de ejecutar
+        }
     })
     $form.Controls.Add($buttonEjecutar)
 
