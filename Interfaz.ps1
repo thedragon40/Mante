@@ -1,11 +1,5 @@
 Add-Type -AssemblyName System.Windows.Forms
 
-# Establecer el encoding para admitir caracteres especiales
-
-
-# Importar las funciones de mantenimiento desde el archivo MaintenanceFunctions.ps1
-. ".\MaintenanceFunctions.ps1"
-
 # Función para ejecutar la tarea correspondiente
 function Execute-Task {
     param (
