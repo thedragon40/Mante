@@ -1,85 +1,71 @@
-# Funciones.ps1
+# MaintenanceFunctions.ps1
 
-# Funciones para el mantenimiento de PC
+function DefragmentDisk {
 
-function Desfragmentar-Disco {
     Write-Host "Desfragmentando el disco..."
+    
     Optimize-Volume -DriveLetter C -Defrag -Verbose
+
 }
 
-function Limpiar-Temporales {
+function CleanTemporaryFiles {
+
     Write-Host "Limpiando archivos temporales..."
-    # Eliminar archivos temporales en la carpeta TEMP
-    Remove-Item -Path "$env:TEMP\*" -Force -Recurse
+    
+    Remove-Item -Path $env:TEMP\* -Recurse -Force -Verbose
+    
 }
 
-function Verificar-Errores-Disco {
+function CheckDiskErrors {
+
     Write-Host "Verificando y reparando errores en el disco..."
-    # Verificar y reparar errores en el disco C:
-    Repair-Volume -DriveLetter C -Verbose
+    
+    chkdsk C: /f /r /x /v
+    
 }
 
-function Actualizar-Sistema {
+function UpdateSystem {
+
     Write-Host "Actualizando el sistema..."
-    # Abrir la configuración de Windows Update
-    Start-Process "ms-settings:windowsupdate" -Wait
+    
+    Invoke-Expression "& $($env:systemroot)\system32\windowspowershell\v1.0\powershell.exe -nop -c `"install-module pswindowsupdate; get-windowsupdate`" -verb runAs"
+    
 }
 
-function Escanear-Seguridad {
-    Write-Host "Realizando escaneo de seguridad con Windows Defender..."
-    # Iniciar un escaneo rápido con Windows Defender
-    Start-MpScan -ScanType QuickScan
+function ScanWithWindowsDefender {
+
+    Write-Host "Escaneando seguridad con Windows Defender..."
+    
+    Start-MpScan -ScanType FullScan -Verbose
+
 }
 
-function Liberar-Espacio {
+function FreeUpDiskSpace {
     Write-Host "Liberando espacio en disco..."
-    # Ejecutar la Limpieza de disco con la configuración predefinida
-    Cleanmgr /sagerun:1
-    # Comprimir archivos del sistema para liberar espacio
-    Compact /CompactOs:always
+    # Agrega aquí los comandos específicos para liberar espacio en disco
+    Remove-Item -Path "C:\Windows\SoftwareDistribution\Download\*" -Force -Recurse -Verbose
 }
 
-function Respaldar-Archivos {
-    Write-Host "Respaldando archivos importantes..."
-    # Agrega aquí los comandos o la lógica para respaldar archivos
-}
+function CreateSystemRestorePoint {
 
-function Crear-Punto-Restauracion {
     Write-Host "Creando un punto de restauración del sistema..."
-    # Crear un punto de restauración con la descripción indicada
-    Checkpoint-Computer -Description "Punto de restauración antes de mantenimiento" -RestorePointType MODIFY_SETTINGS
+    
+    Checkpoint-Computer -Description "Maintenance Restore Point" -RestorePointType MODIFY_SETTINGS
+
 }
 
-function Desinstalar-Aplicaciones {
+function UninstallUnwantedApplications {
+
     Write-Host "Desinstalando aplicaciones no deseadas..."
-    # Agrega aquí los comandos o la lógica para desinstalar aplicaciones
+    
+    Get-WmiObject -Class Win32_Product -Filter "Name LIKE '%badapp%'" | ForEach-Object {$_.Uninstall()}
+    
 }
 
-function Gestionar-Inicio-Sistema {
-    Write-Host "Optimizando programas de inicio del sistema..."
-    # Agrega aquí los comandos o la lógica para gestionar el inicio del sistema
+function ManageStartupPrograms {
+    Write-Host "Gestionando programas de inicio del sistema..."
+    # Agrega aquí los comandos específicos para gestionar programas de inicio del sistema
+    Get-CimInstance -ClassName Win32_StartupCommand | Select-Object Caption, Command -Verbose
 }
 
-function Ejecutar-Opciones($opciones) {
-    foreach ($opcion in $opciones) {
-        switch ($opcion) {
-            "Desfragmentar el disco" { Desfragmentar-Disco }
-            "Limpiar archivos temporales" { Limpiar-Temporales }
-            "Verificar y reparar errores en el disco" { Verificar-Errores-Disco }
-            "Actualizar el sistema" { Actualizar-Sistema }
-            "Escanear seguridad con Windows Defender" { Escanear-Seguridad }
-            "Liberar espacio en disco" { Liberar-Espacio }
-            "Respaldar archivos importantes" { Respaldar-Archivos }
-            "Crear un punto de restauración del sistema" { Crear-Punto-Restauracion }
-            "Desinstalar aplicaciones no deseadas" { Desinstalar-Aplicaciones }
-            "Gestionar programas de inicio del sistema" { Gestionar-Inicio-Sistema }
-            "Ejecutar todas las opciones" {
-                Desfragmentar-Disco; Limpiar-Temporales; Verificar-Errores-Disco;
-                Actualizar-Sistema; Escanear-Seguridad; Liberar-Espacio; Respaldar-Archivos;
-                Crear-Punto-Restauracion; Desinstalar-Aplicaciones; Gestionar-Inicio-Sistema
-            }
-            "Salir" { $form.Close() }
-            default { Write-Host "Opción no válida: $opcion" }
-        }
-    }
-}
+# Agrega funciones adicionales según sea necesario...
