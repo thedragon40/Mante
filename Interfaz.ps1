@@ -23,8 +23,16 @@ function Execute-Task {
     $ProgressBar.Maximum = 100
 
     # Llamada a la función correspondiente según la opción seleccionada
-    $ScriptBlock = $TaskOption.ScriptBlock
-    & $ScriptBlock
+    $ScriptBlock = {
+
+    $ClickedOption = $\_
+    $Functions = $args[0]
+    
+    & $Functions.($ClickedOption.Text)
+
+}
+
+& $ScriptBlock $Functions
 
 
     # Restaurar la barra de progreso y la etiqueta de estado
