@@ -1,4 +1,23 @@
+# MaintenanceForm.ps1
 Add-Type -AssemblyName System.Windows.Forms
+
+# Cargar funciones desde el archivo MaintenanceFunctions.ps1
+$Functions = . ".\MaintenanceFunctions.ps1"
+
+# Crear diccionario para mapear nombres mostrados a nombres internos de funciones
+$FunctionNameMappings = @{
+    "Desfragmentar el disco"                     = "DefragmentDisk"
+    "Limpiar archivos temporales"                = "CleanTemporaryFiles"
+    "Verificar y reparar errores en el disco"    = "CheckDiskErrors"
+    "Actualizar el sistema"                      = "UpdateSystem"
+    "Escanear seguridad con Windows Defender"    = "ScanWithWindowsDefender"
+    "Liberar espacio en disco"                   = "FreeUpDiskSpace"
+    "Respaldar archivos importantes"             = "BackupImportantFiles"
+    "Crear un punto de restauración del sistema" = "CreateSystemRestorePoint"
+    "Desinstalar aplicaciones no deseadas"       = "UninstallUnwantedApplications"
+    "Gestionar programas de inicio del sistema"  = "ManageStartupPrograms"
+    # Agregar otras entradas según sea necesario
+}
 
 # Función para ejecutar la tarea correspondiente
 function Execute-Task {
@@ -6,35 +25,37 @@ function Execute-Task {
         [string]$TaskOption
     )
 
-    # Deshabilitar todos los botones para evitar clics múltiples
-    $Form.Controls | Where-Object { $_ -is [System.Windows.Forms.Button] } | ForEach-Object { $_.Enabled = $false }
+    try {
+        # Deshabilitar todos los botones para evitar clics múltiples
+        $Form.Controls | Where-Object { $_ -is [System.Windows.Forms.Button] } | ForEach-Object { $_.Enabled = $false }
 
-    # Actualizar la etiqueta de estado
-    $StatusLabel.Text = "Ejecutando: $TaskOption"
+        # Actualizar la etiqueta de estado
+        $StatusLabel.Text = "Ejecutando: $TaskOption"
 
-    # Ejecutar la lógica correspondiente a cada opción
-    $ProgressBar.Value = 0
-    $ProgressBar.Maximum = 100
+        # Ejecutar la lógica correspondiente a cada opción
+        $ProgressBar.Value = 0
+        $ProgressBar.Maximum = 100
 
-    # Llamada a la función correspondiente según la opción seleccionada
-    $ScriptBlock = {
+        # Llamada a la función correspondiente según la opción seleccionada
+        $Function = $Functions.$FunctionNameMappings[$TaskOption]
+        if ($Function -ne $null) {
+            & $Function
+        }
+        else {
+            throw "Error: No se encontró una función asociada a la tarea '$TaskOption'."
+        }
+    }
+    catch {
+        Write-Host "Error: $_"
+    }
+    finally {
+        # Restaurar la barra de progreso y la etiqueta de estado
+        $ProgressBar.Value = 0
+        $StatusLabel.Text = "Completado: $TaskOption"
 
-    $ClickedOption = $\_
-    $Functions = $args[0]
-    
-    & $Functions.($ClickedOption.Text)
-
-}
-
-& $ScriptBlock $Functions
-
-
-    # Restaurar la barra de progreso y la etiqueta de estado
-    $ProgressBar.Value = 0
-    $StatusLabel.Text = "Completado: $TaskOption"
-
-    # Habilitar todos los botones después de completar la tarea
-    $Form.Controls | Where-Object { $_ -is [System.Windows.Forms.Button] } | ForEach-Object { $_.Enabled = $true }
+        # Habilitar todos los botones después de completar la tarea
+        $Form.Controls | Where-Object { $_ -is [System.Windows.Forms.Button] } | ForEach-Object { $_.Enabled = $true }
+    }
 }
 
 # Crear la ventana principal
@@ -66,6 +87,7 @@ $Options = @(
     "Actualizar el sistema",
     "Escanear seguridad con Windows Defender",
     "Liberar espacio en disco",
+    "Respaldar archivos importantes",
     "Crear un punto de restauración del sistema",
     "Desinstalar aplicaciones no deseadas",
     "Gestionar programas de inicio del sistema"
@@ -81,9 +103,9 @@ foreach ($Option in $Options) {
     $Button.ForeColor = [System.Drawing.Color]::White
     $Button.Tag = $Option  # Almacena el nombre de la opción en el Tag del botón
     $ScriptBlock = [scriptblock]::Create({
-        param($ClickedOption)
-        Execute-Task -TaskOption $ClickedOption.Text
-    })
+            param($ClickedOption)
+            Execute-Task -TaskOption $ClickedOption
+        })
 
     $Button.Add_Click($ScriptBlock)
 
