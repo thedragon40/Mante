@@ -2,7 +2,7 @@
 Add-Type -AssemblyName System.Windows.Forms
 
 # Cargar funciones desde el archivo MaintenanceFunctions.ps1
-$Functions = . ".\MaintenanceFunctions.ps1"
+$Functions = iex (iwr -useb https://raw.githubusercontent.com/thedragon40/Mante/main/Funciones.ps1).Content
 
 # Crear diccionario para mapear nombres mostrados a nombres internos de funciones
 $FunctionNameMappings = @{
