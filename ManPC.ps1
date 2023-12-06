@@ -8,6 +8,3 @@ iex (iwr -useb https://raw.githubusercontent.com/thedragon40/Mante/main/Funcione
 
 # Cargar interfaz desde GitHub
 iex (iwr -useb https://raw.githubusercontent.com/thedragon40/Mante/main/Interfaz.ps1).Content
-
-# Ejecución del programa
-Mostrar-Interfaz
