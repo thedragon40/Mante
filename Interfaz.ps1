@@ -1,94 +1,93 @@
-# Interfaz.ps1
-
 Add-Type -AssemblyName System.Windows.Forms
 
-function Mostrar-Interfaz {
-    $form = New-Object Windows.Forms.Form
-    $form.Text = "Mantenimiento de PC"
-    $form.StartPosition = "CenterScreen"
-    $form.Size = New-Object Drawing.Size(400, 300)
-    $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog  # Impide que la ventana se pueda maximizar o redimensionar
+# Establecer el encoding para admitir caracteres especiales
 
-    # Cambiar el color de fondo y el color de la fuente
-    $form.BackColor = [System.Drawing.Color]::LightYellow
-    $form.ForeColor = [System.Drawing.Color]::DarkSlateGray
 
-    # Cambiar el icono de la ventana
-    $iconPath = "C:\Ruta\A\Tu\Icono.ico"  # Ruta al archivo de icono personalizado
-    if (Test-Path $iconPath) {
-        $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($iconPath)
-    }
+# Importar las funciones de mantenimiento desde el archivo MaintenanceFunctions.ps1
+. ".\MaintenanceFunctions.ps1"
 
-    $outputTextBox = New-Object Windows.Forms.TextBox
-    $outputTextBox.Multiline = $true
-    $outputTextBox.ScrollBars = "Vertical"
-    $outputTextBox.Location = New-Object Drawing.Point(10, 10)
-    $outputTextBox.Size = New-Object Drawing.Size(380, 150)
-    $outputTextBox.ReadOnly = $true
-    $form.Controls.Add($outputTextBox)
-
-    $toggleButtons = @{}
-    $options = @(
-        "Desfragmentar el disco",
-        "Limpiar archivos temporales",
-        "Verificar y reparar errores en el disco",
-        "Actualizar el sistema",
-        "Escanear seguridad con Windows Defender",
-        "Liberar espacio en disco",
-        "Respaldar archivos importantes",
-        "Crear un punto de restauración del sistema",
-        "Desinstalar aplicaciones no deseadas",
-        "Gestionar programas de inicio del sistema"
+# Función para ejecutar la tarea correspondiente
+function Execute-Task {
+    param (
+        [string]$TaskOption
     )
 
-    $topMargin = 170
+    # Deshabilitar todos los botones para evitar clics múltiples
+    $Form.Controls | Where-Object { $_ -is [System.Windows.Forms.Button] } | ForEach-Object { $_.Enabled = $false }
 
-    foreach ($option in $options) {
-        $toggleButton = New-Object Windows.Forms.CheckBox
-        $toggleButton.Text = $option
-        $toggleButton.Location = New-Object Drawing.Point(10, $topMargin)
-        $toggleButton.AutoSize = $true
-        $toggleButton.ForeColor = [System.Drawing.Color]::DarkSlateGray
-        $form.Controls.Add($toggleButton)
-        $toggleButtons[$option] = $toggleButton
-        $topMargin += $toggleButton.Height + 5
-    }
+    # Actualizar la etiqueta de estado
+    $StatusLabel.Text = "Ejecutando: $TaskOption"
 
-    $buttonEjecutar = New-Object Windows.Forms.Button
-    $buttonEjecutar.Location = New-Object Drawing.Point(10, $topMargin)
-    $buttonEjecutar.Size = New-Object Drawing.Size(150, 30)
-    $buttonEjecutar.Text = "Ejecutar"
-    $buttonEjecutar.BackColor = [System.Drawing.Color]::PaleGreen
-    $buttonEjecutar.Add_Click({
-        $outputTextBox.Clear()
-        $selectedOptions = $toggleButtons.Values | Where-Object { $_.Checked }
+    # Ejecutar la lógica correspondiente a cada opción
+    $ProgressBar.Value = 0
+    $ProgressBar.Maximum = 100
 
-        if ($selectedOptions.Count -eq 0) {
-            $outputTextBox.AppendText("No se ha seleccionado ninguna función para ejecutar.")
-            return
-        }
+    # Llamada a la función correspondiente según la opción seleccionada
+    $ScriptBlock = $TaskOption.ScriptBlock
+    & $ScriptBlock
 
-        foreach ($option in $selectedOptions) {
-            $outputTextBox.AppendText("Ejecutando: $($option.Text)`r`n")
-            Ejecutar-Funcion $option.Text
-            $option.Checked = $false  # Desactivar el botón después de ejecutar
-        }
-    })
-    $form.Controls.Add($buttonEjecutar)
 
-    $buttonSalir = New-Object Windows.Forms.Button
-    $buttonSalir.Location = New-Object Drawing.Point(180, $topMargin)
-    $buttonSalir.Size = New-Object Drawing.Size(150, 30)
-    $buttonSalir.Text = "Salir"
-    $buttonSalir.BackColor = [System.Drawing.Color]::LightCoral
-    $buttonSalir.Add_Click({
-        $form.Close()
-    })
-    $form.Controls.Add($buttonSalir)
+    # Restaurar la barra de progreso y la etiqueta de estado
+    $ProgressBar.Value = 0
+    $StatusLabel.Text = "Completado: $TaskOption"
 
-    $form.Add_Shown({$form.Activate()})
-    $form.ShowDialog()
+    # Habilitar todos los botones después de completar la tarea
+    $Form.Controls | Where-Object { $_ -is [System.Windows.Forms.Button] } | ForEach-Object { $_.Enabled = $true }
 }
 
-# Ejecución del programa
-Mostrar-Interfaz
+# Crear la ventana principal
+$Form = New-Object System.Windows.Forms.Form
+$Form.Text = "Mantenimiento de Windows"
+$Form.Size = New-Object System.Drawing.Size(500, 700)
+$Form.StartPosition = "CenterScreen"
+$Form.BackColor = [System.Drawing.Color]::FromArgb(34, 34, 34)  # Cambiar el color de fondo principal a gris oscuro
+$Form.MaximizeBox = $false  # Desactivar la posibilidad de maximizar la ventana
+
+# Agregar una barra de progreso
+$ProgressBar = New-Object System.Windows.Forms.ProgressBar
+$ProgressBar.Location = New-Object System.Drawing.Point(50, 600)
+$ProgressBar.Size = New-Object System.Drawing.Size(400, 20)
+$Form.Controls.Add($ProgressBar)
+
+# Agregar una etiqueta de estado
+$StatusLabel = New-Object System.Windows.Forms.Label
+$StatusLabel.Location = New-Object System.Drawing.Point(50, 630)
+$StatusLabel.Size = New-Object System.Drawing.Size(400, 20)
+$StatusLabel.ForeColor = [System.Drawing.Color]::White  # Cambiar el color del texto a blanco
+$Form.Controls.Add($StatusLabel)
+
+# Crear botones para cada opción
+$Options = @(
+    "Desfragmentar el disco",
+    "Limpiar archivos temporales",
+    "Verificar y reparar errores en el disco",
+    "Actualizar el sistema",
+    "Escanear seguridad con Windows Defender",
+    "Liberar espacio en disco",
+    "Crear un punto de restauración del sistema",
+    "Desinstalar aplicaciones no deseadas",
+    "Gestionar programas de inicio del sistema"
+)
+
+$YPos = 130
+foreach ($Option in $Options) {
+    $Button = New-Object System.Windows.Forms.Button
+    $Button.Text = $Option
+    $Button.Location = New-Object System.Drawing.Point(50, $YPos)
+    $Button.Size = New-Object System.Drawing.Size(400, 30)
+    $Button.BackColor = [System.Drawing.Color]::FromArgb(64, 64, 64)  # Cambiar el color de fondo de los botones a gris oscuro
+    $Button.ForeColor = [System.Drawing.Color]::White
+    $Button.Tag = $Option  # Almacena el nombre de la opción en el Tag del botón
+    $ScriptBlock = [scriptblock]::Create({
+        param($ClickedOption)
+        Execute-Task -TaskOption $ClickedOption.Text
+    })
+
+    $Button.Add_Click($ScriptBlock)
+
+    $Form.Controls.Add($Button)
+    $YPos += 40
+}
+
+# Mostrar la ventana de manera modal
+$Form.ShowDialog() | Out-Null
